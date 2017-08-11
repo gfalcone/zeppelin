@@ -46,9 +46,9 @@ limitations under the License.
               <small>
                 <span style="display:inline-block" ng-repeat="intp in item.interpreters">
                   <span ng-show="!$first">, </span>
-                  %<span ng-show="!$parent.$first || $first">{{item.name}}</span
-                  ><span ng-show="(!$parent.$first || $first) && !$first">.</span
-                  ><span ng-show="!$first">{{intp.name}}</span>
+                  <span ng-show="!$parent.$first || $first">{{item.name}}</span>
+                  <span ng-show="(!$parent.$first || $first) && !$first">.</span>
+                  <span ng-show="!$first">{{intp.name}}</span>
                   <span ng-show="$parent.$first && $first">(default)</span>
                 </span>
               </small>
@@ -81,13 +81,19 @@ limitations under the License.
           <select id="selectOwners" multiple="multiple">
             <option ng-repeat="owner in permissions.owners" selected="selected">{{owner}}</option>
           </select>
-          Owners can change permissions,read and write the note.
+          Owners can change permissions,read, run and write the note.
         </p>
         <p><span class="writers">Writers </span>
           <select id="selectWriters" multiple="multiple">
             <option ng-repeat="writers in permissions.writers" selected="selected">{{writers}}</option>
           </select>
-            Writers can read and write the note.
+            Writers can read, run and write the note.
+        </p>
+        <p><span class="runners">Runners </span>
+          <select id="selectRunners" multiple="multiple">
+            <option ng-repeat="runners in permissions.runners" selected="selected">{{runners}}</option>
+          </select>
+            Runners can read and run the note
         </p>
         <p><span class="readers">Readers </span>
           <select id="selectReaders" multiple="multiple">

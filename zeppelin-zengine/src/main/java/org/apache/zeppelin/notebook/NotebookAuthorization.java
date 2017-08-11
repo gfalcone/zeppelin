@@ -24,14 +24,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -52,7 +45,8 @@ public class NotebookAuthorization {
   private static final Logger LOG = LoggerFactory.getLogger(NotebookAuthorization.class);
   private static NotebookAuthorization instance = null;
   /*
-   * { "note1": { "owners": ["u1"], "readers": ["u1", "u2"], "writers": ["u1"] },  "note2": ... } }
+   * { "note1": { "owners": ["u1"], "readers": ["u1", "u2"], "runners": ["u2"],
+   * "writers": ["u1"] },  "note2": ... } }
    */
   private static Map<String, Map<String, Set<String>>> authInfo = new HashMap<>();
   /*
@@ -178,6 +172,7 @@ public class NotebookAuthorization {
       noteAuthInfo = new LinkedHashMap();
       noteAuthInfo.put("owners", new LinkedHashSet(entities));
       noteAuthInfo.put("readers", new LinkedHashSet());
+      noteAuthInfo.put("runners", new LinkedHashSet());
       noteAuthInfo.put("writers", new LinkedHashSet());
     } else {
       noteAuthInfo.put("owners", new LinkedHashSet(entities));
@@ -193,9 +188,26 @@ public class NotebookAuthorization {
       noteAuthInfo = new LinkedHashMap();
       noteAuthInfo.put("owners", new LinkedHashSet());
       noteAuthInfo.put("readers", new LinkedHashSet(entities));
+      noteAuthInfo.put("runners", new LinkedHashSet());
       noteAuthInfo.put("writers", new LinkedHashSet());
     } else {
       noteAuthInfo.put("readers", new LinkedHashSet(entities));
+    }
+    authInfo.put(noteId, noteAuthInfo);
+    saveToFile();
+  }
+
+  public void setRunners(String noteId, Set<String> entities) {
+    Map<String, Set<String>> noteAuthInfo = authInfo.get(noteId);
+    entities = validateUser(entities);
+    if (noteAuthInfo == null) {
+      noteAuthInfo = new LinkedHashMap();
+      noteAuthInfo.put("owners", new LinkedHashSet());
+      noteAuthInfo.put("readers", new LinkedHashSet());
+      noteAuthInfo.put("runners", new LinkedHashSet(entities));
+      noteAuthInfo.put("writers", new LinkedHashSet());
+    } else {
+      noteAuthInfo.put("runners", new LinkedHashSet(entities));
     }
     authInfo.put(noteId, noteAuthInfo);
     saveToFile();
@@ -208,6 +220,7 @@ public class NotebookAuthorization {
       noteAuthInfo = new LinkedHashMap();
       noteAuthInfo.put("owners", new LinkedHashSet());
       noteAuthInfo.put("readers", new LinkedHashSet());
+      noteAuthInfo.put("runners", new LinkedHashSet());
       noteAuthInfo.put("writers", new LinkedHashSet(entities));
     } else {
       noteAuthInfo.put("writers", new LinkedHashSet(entities));
@@ -244,6 +257,20 @@ public class NotebookAuthorization {
     return entities;
   }
 
+  public Set<String> getRunners(String noteId) {
+    Map<String, Set<String>> noteAuthInfo = authInfo.get(noteId);
+    Set<String> entities = null;
+    if (noteAuthInfo == null) {
+      entities = new HashSet<>();
+    } else {
+      entities = noteAuthInfo.get("runners");
+      if (entities == null) {
+        entities = new HashSet<>();
+      }
+    }
+    return entities;
+  }
+
   public Set<String> getWriters(String noteId) {
     Map<String, Set<String>> noteAuthInfo = authInfo.get(noteId);
     Set<String> entities = null;
@@ -269,7 +296,14 @@ public class NotebookAuthorization {
   public boolean isReader(String noteId, Set<String> entities) {
     return isMember(entities, getReaders(noteId)) ||
             isMember(entities, getOwners(noteId)) ||
-            isMember(entities, getWriters(noteId));
+            isMember(entities, getWriters(noteId)) ||
+            isMember(entities, getRunners(noteId));
+  }
+
+  public boolean isRunner(String noteId, Set<String> entities) {
+    return isMember(entities, getRunners(noteId)) ||
+            isMember(entities, getWriters(noteId)) ||
+            isMember(entities, getOwners(noteId));
   }
 
   // return true if b is empty or if (a intersection b) is non-empty
@@ -312,6 +346,17 @@ public class NotebookAuthorization {
     return isReader(noteId, userAndRoles);
   }
 
+  public boolean hasRunAuthorization(Set<String> userAndRoles, String noteId) {
+    if (conf.isAnonymousAllowed()) {
+      LOG.debug("Zeppelin runs in anonymous mode, everybody is runner");
+      return true;
+    }
+    if (userAndRoles == null) {
+      return false;
+    }
+    return isRunner(noteId, userAndRoles);
+  }
+
   public void removeNote(String noteId) {
     authInfo.remove(noteId);
     saveToFile();
@@ -338,13 +383,16 @@ public class NotebookAuthorization {
         owners.add(subject.getUser());
         setOwners(noteId, owners);
       } else {
-        // add current user to owners, readers, writers - private note
+        // add current user to owners, readers, runners, writers - private note
         Set<String> entities = getOwners(noteId);
         entities.add(subject.getUser());
         setOwners(noteId, entities);
         entities = getReaders(noteId);
         entities.add(subject.getUser());
         setReaders(noteId, entities);
+        entities = getRunners(noteId);
+        entities.add(subject.getUser());
+        setRunners(noteId, entities);
         entities = getWriters(noteId);
         entities.add(subject.getUser());
         setWriters(noteId, entities);
