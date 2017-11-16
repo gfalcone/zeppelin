@@ -178,6 +178,7 @@ public class NotebookAuthorization {
       noteAuthInfo = new LinkedHashMap();
       noteAuthInfo.put("owners", new LinkedHashSet(entities));
       noteAuthInfo.put("readers", new LinkedHashSet());
+      noteAuthInfo.put("runners", new LinkedHashSet());
       noteAuthInfo.put("writers", new LinkedHashSet());
     } else {
       noteAuthInfo.put("owners", new LinkedHashSet(entities));
@@ -193,12 +194,30 @@ public class NotebookAuthorization {
       noteAuthInfo = new LinkedHashMap();
       noteAuthInfo.put("owners", new LinkedHashSet());
       noteAuthInfo.put("readers", new LinkedHashSet(entities));
+      noteAuthInfo.put("runners", new LinkedHashSet());
       noteAuthInfo.put("writers", new LinkedHashSet());
     } else {
       noteAuthInfo.put("readers", new LinkedHashSet(entities));
     }
     authInfo.put(noteId, noteAuthInfo);
     saveToFile();
+  }
+
+  public void setRunners(String noteId, Set<String> entities) {
+    Map<String, Set<String>> noteAuthInfo = authInfo.get(noteId);
+    entities = validateUser(entities);
+    if (noteAuthInfo == null) {
+      noteAuthInfo = new LinkedHashMap();
+      noteAuthInfo.put("owners", new LinkedHashSet());
+      noteAuthInfo.put("readers", new LinkedHashSet());
+      noteAuthInfo.put("runners", new LinkedHashSet(entities));
+      noteAuthInfo.put("writers", new LinkedHashSet());
+    } else {
+      noteAuthInfo.put("runners", new LinkedHashSet(entities));
+    }
+    authInfo.put(noteId, noteAuthInfo);
+    saveToFile();
+
   }
 
   public void setWriters(String noteId, Set<String> entities) {
@@ -208,6 +227,7 @@ public class NotebookAuthorization {
       noteAuthInfo = new LinkedHashMap();
       noteAuthInfo.put("owners", new LinkedHashSet());
       noteAuthInfo.put("readers", new LinkedHashSet());
+      noteAuthInfo.put("runners", new LinkedHashSet());
       noteAuthInfo.put("writers", new LinkedHashSet(entities));
     } else {
       noteAuthInfo.put("writers", new LinkedHashSet(entities));
@@ -244,6 +264,20 @@ public class NotebookAuthorization {
     return entities;
   }
 
+  public Set<String> getRunners(String noteId) {
+    Map<String, Set<String>> noteAuthInfo = authInfo.get(noteId);
+    Set<String> entities = null;
+    if (noteAuthInfo == null) {
+      entities = new HashSet<>();
+    } else {
+      entities = noteAuthInfo.get("runners");
+      if (entities == null) {
+        entities = new HashSet<>();
+      }
+    }
+    return entities;
+  }
+
   public Set<String> getWriters(String noteId) {
     Map<String, Set<String>> noteAuthInfo = authInfo.get(noteId);
     Set<String> entities = null;
@@ -266,8 +300,14 @@ public class NotebookAuthorization {
     return isMember(entities, getWriters(noteId)) || isMember(entities, getOwners(noteId));
   }
 
+  public boolean isRunner(String noteId, Set<String> entities) {
+    return isMember(entities, getRunners(noteId)) ||
+            isMember(entities, getWriters(noteId)) ||
+            isMember(entities, getOwners(noteId));
+  }
   public boolean isReader(String noteId, Set<String> entities) {
     return isMember(entities, getReaders(noteId)) ||
+            isMember(entities, getRunners(noteId)) ||
             isMember(entities, getOwners(noteId)) ||
             isMember(entities, getWriters(noteId));
   }
@@ -312,6 +352,17 @@ public class NotebookAuthorization {
     return isReader(noteId, userAndRoles);
   }
 
+  public boolean hasRunAuthorization(Set<String> userAndRoles, String noteId) {
+    if (conf.isAnonymousAllowed()) {
+      LOG.debug("Zeppelin runs in anonymous mode, everybody is reader");
+      return true;
+    }
+    if (userAndRoles == null) {
+      return false;
+    }
+    return isRunner(noteId, userAndRoles);
+  }
+
   public void removeNote(String noteId) {
     authInfo.remove(noteId);
     saveToFile();
@@ -345,6 +396,9 @@ public class NotebookAuthorization {
         entities = getReaders(noteId);
         entities.add(subject.getUser());
         setReaders(noteId, entities);
+        entities = getRunners(noteId);
+        entities.add(subject.getUser());
+        setRunners(noteId, entities);
         entities = getWriters(noteId);
         entities.add(subject.getUser());
         setWriters(noteId, entities);

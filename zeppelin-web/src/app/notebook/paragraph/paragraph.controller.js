@@ -238,14 +238,6 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     $scope.originalText = angular.copy(data);
     $scope.dirtyText = undefined;
 
-    if ($scope.paragraph.config.editorSetting.editOnDblClick) {
-      closeEditorAndOpenTable($scope.paragraph);
-    } else if (editorSetting.isOutputHidden &&
-      !$scope.paragraph.config.editorSetting.editOnDblClick) {
-      // %md/%angular repl make output to be hidden by default after running
-      // so should open output if repl changed from %md/%angular to another
-      openEditorAndOpenTable($scope.paragraph);
-    }
     editorSetting.isOutputHidden = $scope.paragraph.config.editorSetting.editOnDblClick;
   };
 
@@ -385,14 +377,6 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
   var openEditorAndCloseTable = function(paragraph) {
     manageEditorAndTableState(paragraph, false, true);
-  };
-
-  var closeEditorAndOpenTable = function(paragraph) {
-    manageEditorAndTableState(paragraph, true, false);
-  };
-
-  var openEditorAndOpenTable = function(paragraph) {
-    manageEditorAndTableState(paragraph, false, false);
   };
 
   var manageEditorAndTableState = function(paragraph, hideEditor, hideTable) {

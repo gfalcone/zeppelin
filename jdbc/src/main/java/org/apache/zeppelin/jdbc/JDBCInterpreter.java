@@ -207,8 +207,7 @@ public class JDBCInterpreter extends Interpreter {
     SqlCompleter completer = null;
     try {
       Set<String> keywordsCompletions = SqlCompleter.getSqlKeywordsCompletions(jdbcConnection);
-      Set<String> dataModelCompletions =
-          SqlCompleter.getDataModelMetadataCompletions(jdbcConnection);
+      Set<String> dataModelCompletions = new HashSet<String>();
       SetView<String> allCompletions = Sets.union(keywordsCompletions, dataModelCompletions);
       completer = new SqlCompleter(allCompletions, dataModelCompletions);
 

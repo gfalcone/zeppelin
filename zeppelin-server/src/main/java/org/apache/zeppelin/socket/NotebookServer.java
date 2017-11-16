@@ -1547,9 +1547,9 @@ public class NotebookServer extends WebSocketServlet
     String noteId = getOpenNoteId(conn);
     final Note note = notebook.getNote(noteId);
     NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
-    if (!notebookAuthorization.isWriter(noteId, userAndRoles)) {
-      permissionError(conn, "write", fromMessage.principal, userAndRoles,
-          notebookAuthorization.getWriters(noteId));
+    if (!notebookAuthorization.isRunner(noteId, userAndRoles)) {
+      permissionError(conn, "run", fromMessage.principal, userAndRoles,
+          notebookAuthorization.getRunners(noteId));
       return;
     }
 
@@ -1567,9 +1567,9 @@ public class NotebookServer extends WebSocketServlet
 
     Note note = notebook.getNote(noteId);
     NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
-    if (!notebookAuthorization.isWriter(noteId, userAndRoles)) {
+    if (!notebookAuthorization.isRunner(noteId, userAndRoles)) {
       permissionError(conn, "run all paragraphs", fromMessage.principal, userAndRoles,
-          notebookAuthorization.getOwners(noteId));
+          notebookAuthorization.getRunners(noteId));
       return;
     }
 
@@ -1605,9 +1605,9 @@ public class NotebookServer extends WebSocketServlet
     String noteId = getOpenNoteId(conn);
     final Note note = notebook.getNote(noteId);
     NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
-    if (!notebookAuthorization.isWriter(noteId, userAndRoles)) {
-      permissionError(conn, "write", fromMessage.principal, userAndRoles,
-          notebookAuthorization.getWriters(noteId));
+    if (!notebookAuthorization.isRunner(noteId, userAndRoles)) {
+      permissionError(conn, "run", fromMessage.principal, userAndRoles,
+          notebookAuthorization.getRunners(noteId));
       return;
     }
 
@@ -1911,7 +1911,7 @@ public class NotebookServer extends WebSocketServlet
       Set<String> userAndRoles = Sets.newHashSet();
       userAndRoles.add(SecurityUtils.getPrincipal());
       userAndRoles.addAll(SecurityUtils.getRoles());
-      if (!notebookIns.getNotebookAuthorization().hasWriteAuthorization(userAndRoles, noteId)) {
+      if (!notebookIns.getNotebookAuthorization().hasRunAuthorization(userAndRoles, noteId)) {
         throw new ForbiddenException(String.format("can't execute note %s", noteId));
       }
 

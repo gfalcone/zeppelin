@@ -89,6 +89,12 @@ limitations under the License.
           </select>
             Writers can read and write the note.
         </p>
+        <p><span class="runners">Runners </span>
+          <select id="selectRunners" multiple="multiple">
+            <option ng-repeat="runners in permissions.runners" selected="selected">{{runners}}</option>
+          </select>
+          Runners can run and read the note.
+        </p>
         <p><span class="readers">Readers </span>
           <select id="selectReaders" multiple="multiple">
             <option ng-repeat="readers in permissions.readers" selected="selected">{{readers}}</option>

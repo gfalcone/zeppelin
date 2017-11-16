@@ -179,6 +179,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     Paragraph p1 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
     InterpreterResult result = new InterpreterResult(InterpreterResult.Code.SUCCESS, InterpreterResult.Type.TEXT, "result");
     p1.setResult(result);
+    p1.setResult(result);
 
     Paragraph p2 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
     p2.setReturn(result, new Throwable());

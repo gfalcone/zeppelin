@@ -81,7 +81,7 @@ public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
     String noteId = createNoteForUser("test", "admin", "password1");
     
     //set permission
-    String payload = "{ \"owners\": [\"admin\"], \"readers\": [\"user2\"], \"writers\": [\"user2\"] }";
+    String payload = "{ \"owners\": [\"admin\"], \"readers\": [\"user2\"], \"runners\": [\"user2\"], \"writers\": [\"user2\"] }";
     PutMethod put = httpPut("/notebook/" + noteId + "/permissions", payload , "admin", "password1");
     assertThat("test set note permission method:", put, isAllowed());
     put.releaseConnection();
@@ -98,7 +98,7 @@ public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
     String noteId = createNoteForUser("test", "admin", "password1");
     
     //set permission
-    String payload = "{ \"owners\": [\"admin\", \"user1\"], \"readers\": [\"user2\"], \"writers\": [\"user2\"] }";
+    String payload = "{ \"owners\": [\"admin\", \"user1\"], \"readers\": [\"user2\"], \"runners\": [\"user2\"], \"writers\": [\"user2\"] }";
     PutMethod put = httpPut("/notebook/" + noteId + "/permissions", payload , "admin", "password1");
     assertThat("test set note permission method:", put, isAllowed());
     put.releaseConnection();
@@ -180,7 +180,7 @@ public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
   }
 
   private void setPermissionForNote(String noteId, String user, String pwd) throws IOException {
-    String payload = "{\"owners\":[\"" + user + "\"],\"readers\":[\"" + user + "\"],\"writers\":[\"" + user + "\"]}";
+    String payload = "{\"owners\":[\"" + user + "\"],\"readers\":[\"" + user + "\"],\"runners\":[\"" + user + "\"],\"writers\":[\"" + user + "\"]}";
     PutMethod put = httpPut(("/notebook/" + noteId + "/permissions"), payload, user, pwd);
     put.releaseConnection();
   }
