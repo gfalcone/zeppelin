@@ -107,8 +107,6 @@ public class NotebookRestApi {
   }
 
   private String ownerPermissionError(Set<String> current, Set<String> allowed) throws IOException {
-    LOG.info("Cannot change permissions. Connection owners {}. Allowed owners {}",
-        current.toString(), allowed.toString());
     return "Insufficient privileges to change permissions.\n\n" +
         "Allowed owners: " + allowed.toString() + "\n\n" +
         "User belongs to: " + current.toString();
